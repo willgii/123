@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>郭广生撞墙挑战</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#F97316',
+                        accent: '#8B5CF6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .character-shadow {
+                filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
+            }
+            .wall-texture {
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            }
+            .animate-headbutt {
+                animation: headbutt 0.5s ease-in-out;
+            }
+            .animate-sit {
+                animation: sit 0.5s ease-in-out forwards;
+            }
+            @keyframes headbutt {
+                0% { transform: translateX(0); }
+                50% { transform: translateX(-100px); }
+                100% { transform: translateX(0); }
+            }
+            @keyframes sit {
+                0% { transform: translateY(0); }
+                100% { transform: translateY(20px); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+    <div class="w-full max-w-md mx-auto relative">
+        <!-- 游戏标题 -->
+        <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent mb-6 text-center">郭广生撞墙挑战</h1>
+        
+        <!-- 游戏区域 -->
+        <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden p-6 wall-texture min-h-[500px] flex flex-col items-center justify-center">
+            <!-- 分数显示 -->
+            <div class="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md">
+                <span class="font-bold text-primary"><i class="fa fa-bolt mr-1"></i>连击: <span id="combo">0</span></span>
+            </div>
+            
+            <!-- 墙 -->
+            <div class="absolute top-0 left-0 w-full h-16 bg-gray-700 shadow-inner flex items-center justify-center">
+                <div class="text-white/20 font-bold text-5xl transform -rotate-90">墙</div>
+            </div>
+            
+            <!-- 地板 -->
+            <div class="absolute bottom-0 left-0 w-full h-16 bg-gray-400 shadow-inner"></div>
+            
+            <!-- 角色容器 -->
+            <div id="character-container" class="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-40 h-64 flex items-end justify-center">
+                <!-- 角色 -->
+                <div id="character" class="character-shadow">
+                    <!-- 角色头部 -->
+                    <div class="w-16 h-16 bg-yellow-300 rounded-full mb-1 relative">
+                        <!-- 眼睛 -->
+                        <div class="absolute top-4 left-3 w-3 h-3 bg-white rounded-full flex items-center justify-center">
+                            <div class="w-1.5 h-1.5 bg-black rounded-full"></div>
+                        </div>
+                        <div class="absolute top-4 right-3 w-3 h-3 bg-white rounded-full flex items-center justify-center">
+                            <div class="w-1.5 h-1.5 bg-black rounded-full"></div>
+                        </div>
+                        <!-- 嘴巴 -->
+                        <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-8 h-2 bg-red-400 rounded-full"></div>
+                    </div>
+                    
+                    <!-- 身体 -->
+                    <div class="w-14 h-20 bg-primary rounded-t-xl relative">
+                        <!-- 衣服上的字 - 调整位置以确保不被遮挡 -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-white text-xs z-10">郭广生</div>
+                        
+                        <!-- 手臂 - 调整位置避免遮挡文字 -->
+                        <div class="absolute top-2 left-0 w-4 h-12 bg-yellow-300 rounded-full transform -rotate-12 origin-top"></div>
+                        <div class="absolute top-2 right-0 w-4 h-12 bg-yellow-300 rounded-full transform rotate-12 origin-top"></div>
+                        
+                        <!-- 腿 -->
+                        <div class="absolute bottom-0 left-3 w-4 h-8 bg-yellow-300 rounded-full"></div>
+                        <div class="absolute bottom-0 right-3 w-4 h-8 bg-yellow-300 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 游戏说明 -->
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md text-center text-sm w-56">
+                <p class="text-gray-700">点击屏幕让郭广生撞墙</p>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="mt-6 flex justify-center gap-4">
+            <button id="start-btn" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                <i class="fa fa-play mr-2"></i>开始游戏
+            </button>
+            <button id="reset-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/50 hidden">
+                <i class="fa fa-refresh mr-2"></i>重新开始
+            </button>
+        </div>
+    </div>
+    
+    <!-- 游戏结束弹窗 -->
+    <div id="game-over-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
+            <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">挑战结束!</h2>
+            <p class="text-center text-gray-600 mb-6">郭广生撞了墙</p>
+            <div class="text-center mb-6">
+                <span class="text-4xl font-bold text-primary" id="final-score">0</span>
+                <span class="text-xl font-bold text-gray-600 ml-1">次</span>
+            </div>
+            <div class="flex justify-center">
+                <button id="play-again-btn" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    <i class="fa fa-refresh mr-2"></i>再玩一次
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 获取DOM元素
+            const character = document.getElementById('character');
+            const characterContainer = document.getElementById('character-container');
+            const comboDisplay = document.getElementById('combo');
+            const startBtn = document.getElementById('start-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const gameOverModal = document.getElementById('game-over-modal');
+            const modalContent = document.getElementById('modal-content');
+            const finalScoreDisplay = document.getElementById('final-score');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            
+            // 游戏变量
+            let combo = 0;
+            let isPlaying = false;
+            let lastClickTime = 0;
+            let clickTimer = null;
+            let gameTimer = null;
+            const GAME_DURATION = 30000; // 游戏时长30秒
+            
+            // 开始游戏
+            function startGame() {
+                isPlaying = true;
+                combo = 0;
+                comboDisplay.textContent = combo;
+                startBtn.classList.add('hidden');
+                resetBtn.classList.remove('hidden');
+                
+                // 设置游戏结束计时器
+                gameTimer = setTimeout(endGame, GAME_DURATION);
+                
+                // 添加点击事件
+                document.addEventListener('click', handleClick);
+                document.addEventListener('touchstart', handleClick);
+            }
+            
+            // 重置游戏
+            function resetGame() {
+                endGame();
+                startGame();
+            }
+            
+            // 结束游戏
+            function endGame() {
+                isPlaying = false;
+                clearTimeout(clickTimer);
+                clearTimeout(gameTimer);
+                
+                // 移除点击事件
+                document.removeEventListener('click', handleClick);
+                document.removeEventListener('touchstart', handleClick);
+                
+                // 显示游戏结束弹窗
+                finalScoreDisplay.textContent = combo;
+                gameOverModal.classList.remove('hidden');
+                
+                // 添加弹窗动画
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            // 处理点击事件
+            function handleClick(e) {
+                e.preventDefault();
+                
+                if (!isPlaying) return;
+                
+                // 记录点击时间，计算点击间隔
+                const now = Date.now();
+                const clickInterval = now - lastClickTime;
+                lastClickTime = now;
+                
+                // 增加连击数
+                combo++;
+                comboDisplay.textContent = combo;
+                
+                // 角色撞墙动画
+                character.classList.add('animate-headbutt');
+                character.classList.remove('animate-sit');
+                
+                // 移除动画类以便可以重新触发
+                clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => {
+                    character.classList.remove('animate-headbutt');
+                    character.classList.add('animate-sit');
+                }, 500);
+            }
+            
+            // 事件监听
+            startBtn.addEventListener('click', startGame);
+            resetBtn.addEventListener('click', resetGame);
+            playAgainBtn.addEventListener('click', () => {
+                // 隐藏弹窗
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                
+                setTimeout(() => {
+                    gameOverModal.classList.add('hidden');
+                    resetGame();
+                }, 300);
+            });
+            
+            // 初始状态让角色坐下
+            character.classList.add('animate-sit');
+        });
+    </script>
+</body>
+</html>
+    
